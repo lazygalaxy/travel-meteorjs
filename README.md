@@ -1,2 +1,1 @@
-# travel-meteorjs
-LazyGalaxy Travel (Planning Phase)
+LazyGalaxy Travel
