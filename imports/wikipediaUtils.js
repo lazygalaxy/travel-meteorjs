@@ -14,7 +14,7 @@ export function processPage(doc, page) {
 	return doc;
 }
 
-var processContent = function (doc) {
+function processContent(doc) {
 	//remove all comments from the main content
 	do {
 		var match = extractContent(['<!--', '-->'], doc, true);
@@ -22,7 +22,7 @@ var processContent = function (doc) {
 	while (match);
 }
 
-var proccessInfobox = function (doc) {
+function proccessInfobox(doc) {
 	// get the infobox content
 	var content = extractContent(['{{Infobox', '}}'], doc, false);
 	if (content) {
@@ -54,7 +54,7 @@ var proccessInfobox = function (doc) {
 	}
 }
 
-var processInfoboxWHS = function (doc) {
+function processInfoboxWHS(doc) {
 	//process possible world heritage site information
 	for (i = 1;; i++) {
 		var designation = 'designation' + i;
@@ -78,7 +78,7 @@ var processInfoboxWHS = function (doc) {
 	}
 }
 
-var processInfoboxWHSKey = function (doc, key, cleanKeys = [key]) {
+function processInfoboxWHSKey(doc, key, cleanKeys = [key]) {
 	if (doc.wikipedia.infobox[key]) {
 		if (cleanKeys.length == 1) {
 			setWHSValue(doc, cleanKeys[0], doc.wikipedia.infobox[key]);
@@ -92,7 +92,7 @@ var processInfoboxWHSKey = function (doc, key, cleanKeys = [key]) {
 	}
 }
 
-var processInfoboxWHSKeyValues = function (doc, designation) {
+function processInfoboxWHSKeyValues(doc, designation) {
 	for (i = 1;; i++) {
 		var freeName = designation + '_free' + i + 'name';
 		var freeValue = designation + '_free' + i + 'value';
@@ -107,10 +107,11 @@ var processInfoboxWHSKeyValues = function (doc, designation) {
 }
 
 //extract coordinate information
-var processCoords = function (doc) {
-	var coords = extractContent(['{{coord', '}}'], doc, true);
+function processCoords(doc) {
+	var coords = extractContent(['{{coord|', '}}'], doc, true);
 	if (coords) {
 		coords = coords.split('|');
+		setCoords(doc, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5], coords[6], coords[7]);
 	}
 
 	if (setCoordsByMap(doc, doc.wikipedia.infobox, ['latd', 'latm', 'lats', 'latns', 'longd', 'longm', 'longs', 'longew'])) {
@@ -126,7 +127,7 @@ var processCoords = function (doc) {
 }
 
 // extract information from the main conent
-var extractContent = function (tokens, doc, mustRemoveTokens) {
+function extractContent(tokens, doc, mustRemoveTokens) {
 	var match = extract(tokens, doc.wikipedia.content);
 	doc.wikipedia.content = doc.wikipedia.content.replace(match, '');
 	if (mustRemoveTokens) {
@@ -136,7 +137,7 @@ var extractContent = function (tokens, doc, mustRemoveTokens) {
 }
 
 //extract informaiton from the infobox
-var extractInfobox = function (tokens, doc, mustRemoveTokens) {
+function extractInfobox(tokens, doc, mustRemoveTokens) {
 	var match = extract(tokens, doc.wikipedia.infobox['content']);
 	doc.wikipedia.infobox['content'] = doc.wikipedia.infobox['content'].replace(match, '');
 	if (mustRemoveTokens) {
@@ -149,19 +150,22 @@ var extractInfobox = function (tokens, doc, mustRemoveTokens) {
 
 // ------------------------------- General Utils -------------------------------
 function setTitle(doc, title) {
-	title = processValue(title);
-	if (doc.title && title && doc.title != title) {
-		throw new Meteor.Error(500, "doc.title conflict: " + doc.title + ' vs. ' + title);
-	} else if (!doc.title && title) {
-		doc.title = processValue(title);
+	if (title) {
+		title = processValue(title);
+
+		if (doc.title && doc.title != title) {
+			throw new Meteor.Error(500, "doc.title conflict: " + doc.title + ' vs. ' + title);
+		} else if (!doc.title) {
+			doc.title = title;
+		}
 	}
 }
 
-setImage = function (doc, image, caption) {
-	image = processValue(image);
-	caption = processValue(caption);
-
+function setImage(doc, image, caption) {
 	if (image && caption) {
+		image = processValue(image);
+		caption = processValue(caption);
+
 		if (!doc.images) {
 			doc.images = {};
 		}
@@ -173,7 +177,7 @@ setImage = function (doc, image, caption) {
 	}
 }
 
-setWHSValue = function (doc, key, value) {
+function setWHSValue(doc, key, value) {
 	if (key && value) {
 		if (!doc.whs) {
 			doc.whs = {};
@@ -189,11 +193,11 @@ setWHSValue = function (doc, key, value) {
 	return false;
 }
 
-setCoordsByMap = function (doc, map, keys) {
+function setCoordsByMap(doc, map, keys) {
 	return setCoords(doc, map[keys[0]], map[keys[1]], map[keys[2]], map[keys[3]], map[keys[4]], map[keys[5]], map[keys[6]], map[keys[7]]);
 }
 
-setCoords = function (doc, latd, latm, lats, latns, longd, longm, longs, longew) {
+function setCoords(doc, latd, latm, lats, latns, longd, longm, longs, longew) {
 	if (latd && latm && lats && latns && longd && longm && longs && longew) {
 		if (!doc.coords) {
 			doc.coords = {};
@@ -214,22 +218,22 @@ setCoords = function (doc, latd, latm, lats, latns, longd, longm, longs, longew)
 }
 
 //removes garbage from a value
-var processValue = function (value) {
+function processValue(value) {
 	return value.trim();
 }
 
 //normalize a value into a key
-normalizeKey = function (value) {
+function normalizeKey(value) {
 	return processValue(value.toLowerCase());
 }
 
 //normalize a value into a regular expression
-normalizeRegExp = function (value) {
+function normalizeRegExp(value) {
 	return value.replace('|', '\\|');
 }
 
 //general regexp extract helper
-extract = function (tokens, text) {
+function extract(tokens, text) {
 	var regExpStr = normalizeRegExp(tokens[0]);
 	for (i = 1; i < tokens.length; i++) {
 		regExpStr += '(.|\n)*?' + normalizeRegExp(tokens[i]);
