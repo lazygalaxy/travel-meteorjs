@@ -18,6 +18,17 @@ function processContent(doc) {
 	//remove all comments from the main content
 	do {
 		var match = extractContent(['<!--', '-->'], doc, true);
+		if (match) {
+			console.info('removed ' + match);
+		}
+	}
+	while (match);
+
+	do {
+		var match = extractContent(['<', 'small>'], doc, true);
+		if (match) {
+			console.info('removed ' + match);
+		}
 	}
 	while (match);
 }
@@ -75,6 +86,10 @@ function processInfoboxWHS(doc) {
 		processInfoboxWHSKey(doc, 'year');
 		processInfoboxWHSKey(doc, 'session');
 		processInfoboxWHSKey(doc, 'criteria');
+		processInfoboxWHSKey(doc, 'link', ['url']);
+		processInfoboxWHSKey(doc, 'state_party');
+		processInfoboxWHSKey(doc, 'type');
+		processInfoboxWHSKey(doc, 'whs', ['name']);
 	}
 }
 
@@ -150,9 +165,8 @@ function extractInfobox(tokens, doc, mustRemoveTokens) {
 
 // ------------------------------- General Utils -------------------------------
 function setTitle(doc, title) {
+	title = processValue(title);
 	if (title) {
-		title = processValue(title);
-
 		if (doc.title && doc.title != title) {
 			throw new Meteor.Error(500, "doc.title conflict: " + doc.title + ' vs. ' + title);
 		} else if (!doc.title) {
@@ -162,10 +176,10 @@ function setTitle(doc, title) {
 }
 
 function setImage(doc, image, caption) {
-	if (image && caption) {
-		image = processValue(image);
-		caption = processValue(caption);
+	image = processValue(image);
+	caption = processValue(caption);
 
+	if (image && caption) {
 		if (!doc.images) {
 			doc.images = {};
 		}
@@ -178,6 +192,8 @@ function setImage(doc, image, caption) {
 }
 
 function setWHSValue(doc, key, value) {
+	value = processValue(value);
+
 	if (key && value) {
 		if (!doc.whs) {
 			doc.whs = {};
@@ -198,6 +214,15 @@ function setCoordsByMap(doc, map, keys) {
 }
 
 function setCoords(doc, latd, latm, lats, latns, longd, longm, longs, longew) {
+	latd = processValue(latd);
+	latm = processValue(latm);
+	lats = processValue(lats);
+	latns = processValue(latns);
+	longd = processValue(longd);
+	longm = processValue(longm);
+	longs = processValue(longs);
+	longew = processValue(longew);
+
 	if (latd && latm && lats && latns && longd && longm && longs && longew) {
 		if (!doc.coords) {
 			doc.coords = {};
@@ -213,18 +238,28 @@ function setCoords(doc, latd, latm, lats, latns, longd, longm, longs, longew) {
 		} else {
 			throw new Meteor.Error(500, "duplicate doc.coords");
 		}
-		return false;
 	}
+	return false;
 }
 
 //removes garbage from a value
 function processValue(value) {
-	return value.trim();
+	if (value) {
+		value = value.split('[').join('');
+		value = value.split(']').join('');
+		value = value.split('(').join('');
+		value = value.split(')').join('');
+
+		return value.trim();
+	}
+	return '';
 }
 
 //normalize a value into a key
 function normalizeKey(value) {
-	return processValue(value.toLowerCase());
+	value = processValue(value.toLowerCase());
+	value = value.split(' ').join('_');
+	return value;
 }
 
 //normalize a value into a regular expression

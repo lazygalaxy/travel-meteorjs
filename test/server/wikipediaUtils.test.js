@@ -17,7 +17,7 @@ describe('wikipedia parse', function () {
 
 		var doc = {};
 		processPage(doc, page);
-		console.info(doc);
+		//console.info(doc);
 
 		//general
 		assert.equal(doc.title, 'Heraion of Samos');
@@ -27,6 +27,10 @@ describe('wikipedia parse', function () {
 		assert.equal(doc.whs.year, '1992');
 		assert.equal(doc.whs.session, '16th');
 		assert.equal(doc.whs.criteria, 'ii, iii');
+		assert.equal(doc.whs.url, 'http://whc.unesco.org/en/list/595');
+		assert.equal(doc.whs.name, 'Pythagoreion and Heraion of Samos');
+		assert.equal(doc.whs.type, 'Cultural');
+		assert.equal(doc.whs.state_party, 'Greece');
 
 		//coords
 		assert.equal(doc.coords.latd, '37');
@@ -45,7 +49,7 @@ describe('wikipedia parse', function () {
 
 		var doc = {};
 		processPage(doc, page);
-		//console.info(doc);
+		console.info(doc);
 
 		//general
 		assert.equal(doc.title, 'Pythagoreion');
@@ -55,6 +59,10 @@ describe('wikipedia parse', function () {
 		assert.equal(doc.whs.year, '1992');
 		assert.equal(doc.whs.session, '16th');
 		assert.equal(doc.whs.criteria, 'ii, iii');
+		assert.equal(doc.whs.url, 'http://whc.unesco.org/en/list/595');
+		assert.equal(doc.whs.name, 'Pythagoreion and Heraion of Samos');
+		assert.equal(doc.whs.type, 'Cultural');
+		assert.equal(doc.whs.state_party, 'Greece');
 
 		//coords
 		assert.equal(doc.coords.latd, '37');
