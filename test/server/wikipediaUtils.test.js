@@ -32,6 +32,11 @@ describe('wikipedia parse', function () {
 		assert.equal(doc.whs.type, 'Cultural');
 		assert.equal(doc.whs.state_party, 'Greece');
 
+		//categories
+		assert.equal(doc.category.length, 2);
+		assert.equal(doc.category[0], 'Cultural');
+		assert.equal(doc.category[1], 'Sanctuary');
+
 		//coords
 		assert.equal(doc.coords.latd, '37');
 		assert.equal(doc.coords.latm, '40');
@@ -41,6 +46,10 @@ describe('wikipedia parse', function () {
 		assert.equal(doc.coords.longm, '53');
 		assert.equal(doc.coords.longs, '08');
 		assert.equal(doc.coords.longew, 'E');
+
+		//images
+		assert.equal(Object.keys(doc.images).length, 1);
+		assert.equal(Object.keys(doc.images)[0], 'Heraion_i_samos.jpg');
 	}), it('Pythagoreion', function () {
 		var result = Assets.getText('test/wikipedia/Pythagoreion.json');
 		var json = JSON.parse(result);
@@ -49,7 +58,7 @@ describe('wikipedia parse', function () {
 
 		var doc = {};
 		processPage(doc, page);
-		console.info(doc);
+		//console.info(doc);
 
 		//general
 		assert.equal(doc.title, 'Pythagoreion');
@@ -64,6 +73,10 @@ describe('wikipedia parse', function () {
 		assert.equal(doc.whs.type, 'Cultural');
 		assert.equal(doc.whs.state_party, 'Greece');
 
+		//categories
+		assert.equal(doc.category.length, 1);
+		assert.equal(doc.category[0], 'Cultural');
+
 		//coords
 		assert.equal(doc.coords.latd, '37');
 		assert.equal(doc.coords.latm, '42');
@@ -73,5 +86,9 @@ describe('wikipedia parse', function () {
 		assert.equal(doc.coords.longm, '52');
 		assert.equal(doc.coords.longs, '7.62');
 		assert.equal(doc.coords.longew, 'E');
+
+		//images
+		assert.equal(Object.keys(doc.images).length, 1);
+		assert.equal(Object.keys(doc.images)[0], 'File:Samos_070_2009.JPG');
 	});
 });

@@ -9,6 +9,8 @@ export function processPage(doc, page) {
 		processContent(doc);
 		proccessInfobox(doc);
 
+		processTitle(doc);
+		processCategories(doc);
 		processCoords(doc);
 	}
 	return doc;
@@ -53,12 +55,15 @@ function proccessInfobox(doc) {
 		}
 		while (match);
 
-		setTitle(doc, doc.wikipedia.infobox.name);
-		delete doc.wikipedia.infobox.name;
-
-		setImage(doc, doc.wikipedia.infobox.image, doc.wikipedia.infobox.caption);
-		delete doc.wikipedia.infobox.image;
-		delete doc.wikipedia.infobox.caption;
+		if (doc.wikipedia.infobox.image) {
+			//this should go into a wikipedia specific addImage method
+			var image = doc.wikipedia.infobox.image.split('|')[0];
+			image = image.split(' ').join('_');
+			if (addImage(doc, image, doc.wikipedia.infobox.caption)) {
+				delete doc.wikipedia.infobox.image;
+				delete doc.wikipedia.infobox.caption;
+			}
+		}
 
 		//process whs info from the infobox
 		processInfoboxWHS(doc);
@@ -121,6 +126,26 @@ function processInfoboxWHSKeyValues(doc, designation) {
 	}
 }
 
+//extract category information
+function processTitle(doc) {
+	if (setTitle(doc, doc.wikipedia.infobox.name)) {
+		delete doc.wikipedia.infobox.name;
+	}
+}
+
+//extract category information
+function processCategories(doc) {
+	if (doc.whs) {
+		addCategory(doc, doc.whs.type);
+	}
+
+	if (doc.wikipedia.infobox) {
+		if (addCategory(doc, doc.wikipedia.infobox.type)) {
+			delete doc.wikipedia.infobox.type;
+		}
+	}
+}
+
 //extract coordinate information
 function processCoords(doc) {
 	var coords = extractContent(['{{coord|', '}}'], doc, true);
@@ -172,23 +197,45 @@ function setTitle(doc, title) {
 		} else if (!doc.title) {
 			doc.title = title;
 		}
+		return true;
 	}
+	return false;
 }
 
-function setImage(doc, image, caption) {
+function addImage(doc, image, caption) {
 	image = processValue(image);
 	caption = processValue(caption);
 
-	if (image && caption) {
+	if (image) {
 		if (!doc.images) {
 			doc.images = {};
 		}
 
-		if (image && !(image in doc.images)) {
+		if (!(image in doc.images)) {
 			doc.images[image] = {};
-			doc.images[image].caption = caption;
+			if (caption) {
+				doc.images[image].caption = caption;
+			}
 		}
+		return true;
 	}
+	return false;
+}
+
+function addCategory(doc, category) {
+	category = processValue(category);
+
+	if (category) {
+		if (!doc.category) {
+			doc.category = [];
+		}
+
+		if (!(category in doc.category)) {
+			doc.category.push(category);
+		}
+		return true;
+	}
+	return false;
 }
 
 function setWHSValue(doc, key, value) {
