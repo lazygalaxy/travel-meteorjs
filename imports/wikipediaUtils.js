@@ -1,8 +1,8 @@
-export function processPage(doc, result) {
-	var json = JSON.parse(result);
+export function processPage(doc, content) {
+	var json = JSON.parse(content);
 	var pageKey = Object.keys(json.query.pages);
 	var page = json.query.pages[pageKey];
-	var content = page.revisions[0]['*'];
+	content = page.revisions[0]['*'];
 	if (content) {
 		setTitle(doc, page.title);
 

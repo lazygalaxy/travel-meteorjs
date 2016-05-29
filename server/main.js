@@ -9,6 +9,11 @@ import {
 from 'meteor/http';
 
 import {
+	processPage
+}
+from '../imports/wikipediaUtils.js';
+
+import {
 	Locations
 }
 from '../imports/api/locations.js';
@@ -19,9 +24,9 @@ Meteor.startup(() => {
 			console.log(error);
 		} else {
 			var doc = {};
-			processPage(doc, result);
+			processPage(doc, result.content);
 			console.info(doc);
-			Locations.insert(doc);
+			//Locations.insert(doc);
 		}
 	});
 });

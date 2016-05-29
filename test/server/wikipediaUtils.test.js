@@ -10,9 +10,9 @@ from '../../imports/wikipediaUtils.js';
 
 describe('wikipedia parse', function () {
 	it('Heraion of Samos', function () {
-		var result = Assets.getText('test/wikipedia/Heraion_of_Samos.json');
+		var content = Assets.getText('test/wikipedia/Heraion_of_Samos.json');
 		var doc = {};
-		processPage(doc, result);
+		processPage(doc, content);
 		//console.info(doc);
 
 		//general
@@ -47,9 +47,9 @@ describe('wikipedia parse', function () {
 		assert.equal(Object.keys(doc.images).length, 1);
 		assert.equal(Object.keys(doc.images)[0], 'Heraion_i_samos.jpg');
 	}), it('Pythagoreion', function () {
-		var result = Assets.getText('test/wikipedia/Pythagoreion.json');
+		var content = Assets.getText('test/wikipedia/Pythagoreion.json');
 		var doc = {};
-		processPage(doc, result);
+		processPage(doc, content);
 		//console.info(doc);
 
 		//general
