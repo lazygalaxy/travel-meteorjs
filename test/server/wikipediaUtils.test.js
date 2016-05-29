@@ -11,12 +11,8 @@ from '../../imports/wikipediaUtils.js';
 describe('wikipedia parse', function () {
 	it('Heraion of Samos', function () {
 		var result = Assets.getText('test/wikipedia/Heraion_of_Samos.json');
-		var json = JSON.parse(result);
-		var pageKey = Object.keys(json.query.pages);
-		var page = json.query.pages[pageKey];
-
 		var doc = {};
-		processPage(doc, page);
+		processPage(doc, result);
 		//console.info(doc);
 
 		//general
@@ -52,12 +48,8 @@ describe('wikipedia parse', function () {
 		assert.equal(Object.keys(doc.images)[0], 'Heraion_i_samos.jpg');
 	}), it('Pythagoreion', function () {
 		var result = Assets.getText('test/wikipedia/Pythagoreion.json');
-		var json = JSON.parse(result);
-		var pageKey = Object.keys(json.query.pages);
-		var page = json.query.pages[pageKey];
-
 		var doc = {};
-		processPage(doc, page);
+		processPage(doc, result);
 		//console.info(doc);
 
 		//general
