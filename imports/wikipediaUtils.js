@@ -205,19 +205,22 @@ function setTitle(doc, title) {
 	return false;
 }
 
-function addImage(doc, image, caption) {
-	image = processValue(image);
+function addImage(doc, url, caption) {
+	url = processValue(url);
 	caption = processValue(caption);
 
-	if (image) {
+	if (url) {
 		if (!doc.images) {
 			doc.images = {};
 		}
 
-		if (!(image in doc.images)) {
-			doc.images[image] = {};
+		var key = url.split('.').join('<dot>');
+
+		if (!(key in doc.images)) {
+			doc.images[key] = {};
+			doc.images[key].url = url;
 			if (caption) {
-				doc.images[image].caption = caption;
+				doc.images[key].caption = caption;
 			}
 		}
 		return true;
@@ -299,6 +302,7 @@ function processValue(value) {
 		value = value.split(']').join('');
 		value = value.split('(').join('');
 		value = value.split(')').join('');
+		value = value.split('\'').join('');
 
 		return value.trim();
 	}

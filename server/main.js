@@ -19,14 +19,19 @@ import {
 from '../imports/api/locations.js';
 
 Meteor.startup(() => {
-	HTTP.call("GET", "https://en.wikipedia.org/w/api.php?action=query&titles=Pythagoreion&prop=revisions&rvprop=content&format=json", function (error, result) {
+	Assets.getText('test/wikipedia/Heraion_of_Samos.json', function (error, result) {
+		//HTTP.call("GET", "https://en.wikipedia.org/w/api.php?action=query&titles=Pythagoreion&prop=revisions&rvprop=content&format=json", function (error, result) {
 		if (error) {
 			console.log(error);
 		} else {
 			var doc = {};
-			processPage(doc, result.content);
+			processPage(doc, result);
 			console.info(doc);
-			//Locations.insert(doc);
+			Locations.upsert({
+				_id: doc.title
+			}, {
+				doc
+			});
 		}
 	});
 });

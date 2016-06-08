@@ -8,6 +8,11 @@ import {
 }
 from 'meteor/reactive-var';
 
+import {
+	Locations
+}
+from '../imports/api/locations.js';
+
 import './main.html';
 
 Template.hello.onCreated(function helloOnCreated() {

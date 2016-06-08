@@ -45,7 +45,9 @@ describe('wikipedia parse', function () {
 
 		//images
 		assert.equal(Object.keys(doc.images).length, 1);
-		assert.equal(Object.keys(doc.images)[0], 'Heraion_i_samos.jpg');
+		assert.equal(Object.keys(doc.images)[0], 'Heraion_i_samos<dot>jpg');
+		assert.equal(doc.images['Heraion_i_samos<dot>jpg'].url, 'Heraion_i_samos.jpg');
+		assert.equal(doc.images['Heraion_i_samos<dot>jpg'].caption, 'Heraion in Samos, Greece.');
 	}), it('Pythagoreion', function () {
 		var content = Assets.getText('test/wikipedia/Pythagoreion.json');
 		var doc = {};
@@ -81,6 +83,7 @@ describe('wikipedia parse', function () {
 
 		//images
 		assert.equal(Object.keys(doc.images).length, 1);
-		assert.equal(Object.keys(doc.images)[0], 'File:Samos_070_2009.JPG');
+		assert.equal(Object.keys(doc.images)[0], 'File:Samos_070_2009<dot>JPG');
+		assert.equal(doc.images['File:Samos_070_2009<dot>JPG'].url, 'File:Samos_070_2009.JPG');
 	});
 });
