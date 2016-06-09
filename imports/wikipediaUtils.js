@@ -19,26 +19,12 @@ export function processPage(doc, content) {
 	return doc;
 }
 
-export function processListWHS(doc, content) {
-	var json = JSON.parse(content);
-	var pageKey = Object.keys(json.query.pages);
-	var page = json.query.pages[pageKey];
-	content = page.revisions[0]['*'];
-	if (content) {
-		setTitle(doc, page.title);
-
-		doc.wikipedia = {}
-		doc.wikipedia.content = content;
-
-		extractContent(['[[', ']]'], doc, false, true, true);
-	}
-	return [];
-}
-
 function processContent(doc) {
 	//remove all comments from the main content
 	extractContent(['<!--', '-->'], doc, true, false, true);
 	extractContent(['<', 'small>'], doc, true, false, true);
+
+	doc.wikipedia.links = extractContent(['[[', ']]'], doc, false, true, true);
 }
 
 function proccessInfobox(doc) {
