@@ -32,7 +32,7 @@ function proccessInfobox(doc) {
 	var matches = extractContent(['{{Infobox', '}}'], doc, true, true, false);
 	if (matches.length > 0) {
 		doc.wikipedia.infobox = {};
-		doc.wikipedia.infobox['content'] = matches[0];
+		doc.wikipedia.infobox.content = matches[0];
 
 		// extract all key value pairs
 		var matches = extractInfobox(['|', '=', '\n'], doc);
@@ -57,6 +57,8 @@ function proccessInfobox(doc) {
 
 		//process whs info from the infobox
 		processInfoboxWHS(doc);
+
+		doc.wikipedia.infobox.content = processValue(doc.wikipedia.infobox.content)
 	}
 }
 
@@ -177,9 +179,9 @@ function extractContent(tokens, doc, removeString, removeTokens, findAll) {
 
 //extract informaiton from the infobox
 function extractInfobox(tokens, doc) {
-	var matches = extract(tokens, doc.wikipedia.infobox['content'], true);
+	var matches = extract(tokens, doc.wikipedia.infobox.content, true);
 	for (i = 0; i < matches.length; i++) {
-		doc.wikipedia.infobox['content'] = doc.wikipedia.infobox['content'].replace(matches[i], '')
+		doc.wikipedia.infobox.content = doc.wikipedia.infobox.content.replace(matches[i], '')
 		matches[i] = matches[i].substring(tokens[0].length, matches[i].length - tokens[tokens.length - 1].length)
 		matches[i].trim()
 	}

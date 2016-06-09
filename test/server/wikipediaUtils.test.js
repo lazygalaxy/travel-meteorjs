@@ -24,6 +24,8 @@ describe('wikipedia parse page', function () {
 		var doc = {}
 		processPage(doc, content)
 
+		assert.equal(doc.wikipedia.infobox.content, 'ancient site')
+
 		//general
 		assert.equal(doc.title, 'Heraion of Samos')
 
@@ -64,6 +66,8 @@ describe('wikipedia parse page', function () {
 		var content = Assets.getText('test/wikipedia/Pythagoreion.json')
 		var doc = {}
 		processPage(doc, content)
+
+		assert.equal(doc.wikipedia.infobox.content, 'World Heritage Site')
 
 		//general
 		assert.equal(doc.title, 'Pythagoreion')
