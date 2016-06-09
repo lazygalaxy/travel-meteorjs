@@ -4,16 +4,25 @@ import {
 from 'meteor/practicalmeteor:chai';
 
 import {
+	expect
+}
+from 'meteor/practicalmeteor:chai';
+
+import {
 	processPage
 }
 from '../../imports/wikipediaUtils.js';
 
-describe('wikipedia parse', function () {
+import {
+	processListWHS
+}
+from '../../imports/wikipediaUtils.js';
+
+describe('wikipedia parse page', function () {
 	it('Heraion of Samos', function () {
 		var content = Assets.getText('test/wikipedia/Heraion_of_Samos.json');
 		var doc = {};
 		processPage(doc, content);
-		//console.info(doc);
 
 		//general
 		assert.equal(doc.title, 'Heraion of Samos');
@@ -52,7 +61,6 @@ describe('wikipedia parse', function () {
 		var content = Assets.getText('test/wikipedia/Pythagoreion.json');
 		var doc = {};
 		processPage(doc, content);
-		//console.info(doc);
 
 		//general
 		assert.equal(doc.title, 'Pythagoreion');
@@ -85,5 +93,36 @@ describe('wikipedia parse', function () {
 		assert.equal(Object.keys(doc.images).length, 1);
 		assert.equal(Object.keys(doc.images)[0], 'File:Samos_070_2009<dot>JPG');
 		assert.equal(doc.images['File:Samos_070_2009<dot>JPG'].url, 'File:Samos_070_2009.JPG');
-	});
+	}), it('List_of_World_Heritage_Sites_by_year_of_inscription', function () {
+		var content = Assets.getText('test/wikipedia/List_of_World_Heritage_Sites_by_year_of_inscription.json');
+		var doc = {};
+		processPage(doc, content);
+
+		//general
+		assert.equal(doc.title, 'List of World Heritage Sites by year of inscription');
+
+		//whs
+		expect(doc.whs).to.be.undefined;
+
+		//categories
+		expect(doc.category).to.be.undefined;
+
+		//coords
+		expect(doc.coords).to.be.undefined;
+
+		//images
+		expect(doc.images).to.be.undefined;
+
+	})
 });
+
+//describe('wikipedia parse list', function () {
+//	it('List_of_World_Heritage_Sites_by_year_of_inscription', function () {
+//		var content = Assets.getText('test/wikipedia/List_of_World_Heritage_Sites_by_year_of_inscription.json');
+//		var doc = {};
+//		processListWHS(doc, content);
+//
+//		//general
+//		assert.equal(doc.title, 'List of World Heritage Sites by year of inscription');
+//	});
+//});

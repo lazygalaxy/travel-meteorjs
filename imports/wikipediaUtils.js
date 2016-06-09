@@ -19,44 +19,45 @@ export function processPage(doc, content) {
 	return doc;
 }
 
+export function processListWHS(doc, content) {
+	var json = JSON.parse(content);
+	var pageKey = Object.keys(json.query.pages);
+	var page = json.query.pages[pageKey];
+	content = page.revisions[0]['*'];
+	if (content) {
+		setTitle(doc, page.title);
+
+		doc.wikipedia = {}
+		doc.wikipedia.content = content;
+
+		extractContent(['[[', ']]'], doc, false, true, true);
+	}
+	return [];
+}
+
 function processContent(doc) {
 	//remove all comments from the main content
-	do {
-		var match = extractContent(['<!--', '-->'], doc, true);
-		if (match) {
-			console.info('removed ' + match);
-		}
-	}
-	while (match);
-
-	do {
-		var match = extractContent(['<', 'small>'], doc, true);
-		if (match) {
-			console.info('removed ' + match);
-		}
-	}
-	while (match);
+	extractContent(['<!--', '-->'], doc, true, false, true);
+	extractContent(['<', 'small>'], doc, true, false, true);
 }
 
 function proccessInfobox(doc) {
 	// get the infobox content
-	var content = extractContent(['{{Infobox', '}}'], doc, false);
-	if (content) {
+	var matches = extractContent(['{{Infobox', '}}'], doc, true, true, false);
+	if (matches.length > 0) {
 		doc.wikipedia.infobox = {};
-		doc.wikipedia.infobox['content'] = content;
-		do {
-			// extract all key value pair
-			var match = extractInfobox(['|', '=', '\n'], doc, true);
-			if (match) {
-				var keyValue = match.split('=');
-				var key = normalizeKey(keyValue[0]);
-				var value = keyValue[1].trim();
-				if (value) {
-					doc.wikipedia.infobox[key] = value;
-				}
+		doc.wikipedia.infobox['content'] = matches[0];
+
+		// extract all key value pairs
+		var matches = extractInfobox(['|', '=', '\n'], doc);
+		for (i = 0; i < matches.length; i++) {
+			var keyValue = matches[i].split('=');
+			var key = normalizeKey(keyValue[0]);
+			var value = keyValue[1].trim();
+			if (value) {
+				doc.wikipedia.infobox[key] = value;
 			}
 		}
-		while (match);
 
 		if (doc.wikipedia.infobox.image) {
 			//this should go into a wikipedia specific addImage method
@@ -74,7 +75,7 @@ function proccessInfobox(doc) {
 }
 
 function processInfoboxWHS(doc) {
-	//process possible world heritage site information
+	// process possible world heritage site information
 	for (i = 1;; i++) {
 		var designation = 'designation' + i;
 		if (doc.wikipedia.infobox[designation] && doc.wikipedia.infobox[designation].toUpperCase() == 'WHS') {
@@ -131,8 +132,10 @@ function processInfoboxWHSKeyValues(doc, designation) {
 
 //extract category information
 function processTitle(doc) {
-	if (setTitle(doc, doc.wikipedia.infobox.name)) {
-		delete doc.wikipedia.infobox.name;
+	if (doc.wikipedia.infobox) {
+		if (setTitle(doc, doc.wikipedia.infobox.name)) {
+			delete doc.wikipedia.infobox.name;
+		}
 	}
 }
 
@@ -151,44 +154,51 @@ function processCategories(doc) {
 
 //extract coordinate information
 function processCoords(doc) {
-	var coords = extractContent(['{{coord|', '}}'], doc, true);
-	if (coords) {
-		coords = coords.split('|');
+	var matches = extractContent(['{{coord|', '}}'], doc, true, true, false);
+	if (matches.length > 0) {
+		var coords = matches[0].split('|');
 		setCoords(doc, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5], coords[6], coords[7]);
 	}
 
-	if (setCoordsByMap(doc, doc.wikipedia.infobox, ['latd', 'latm', 'lats', 'latns', 'longd', 'longm', 'longs', 'longew'])) {
-		delete doc.wikipedia.infobox.latd;
-		delete doc.wikipedia.infobox.latm;
-		delete doc.wikipedia.infobox.lats;
-		delete doc.wikipedia.infobox.latns;
-		delete doc.wikipedia.infobox.longd;
-		delete doc.wikipedia.infobox.longm;
-		delete doc.wikipedia.infobox.longs;
-		delete doc.wikipedia.infobox.longew;
+	if (doc.wikipedia.infobox) {
+		if (setCoordsByMap(doc, doc.wikipedia.infobox, ['latd', 'latm', 'lats', 'latns', 'longd', 'longm', 'longs', 'longew'])) {
+			delete doc.wikipedia.infobox.latd;
+			delete doc.wikipedia.infobox.latm;
+			delete doc.wikipedia.infobox.lats;
+			delete doc.wikipedia.infobox.latns;
+			delete doc.wikipedia.infobox.longd;
+			delete doc.wikipedia.infobox.longm;
+			delete doc.wikipedia.infobox.longs;
+			delete doc.wikipedia.infobox.longew;
+		}
 	}
 }
 
 // extract information from the main conent
-function extractContent(tokens, doc, mustRemoveTokens) {
-	var match = extract(tokens, doc.wikipedia.content);
-	doc.wikipedia.content = doc.wikipedia.content.replace(match, '');
-	if (mustRemoveTokens) {
-		match = match.substring(tokens[0].length, match.length - tokens[tokens.length - 1].length);
+function extractContent(tokens, doc, removeString, removeTokens, findAll) {
+	var matches = extract(tokens, doc.wikipedia.content, findAll);
+	for (i = 0; i < matches.length; i++) {
+		if (removeString) {
+			doc.wikipedia.content = doc.wikipedia.content.replace(matches[i], '')
+		}
+		if (removeTokens) {
+			matches[i] = matches[i].substring(tokens[0].length, matches[i].length - tokens[tokens.length - 1].length)
+		}
+		matches[i].trim()
 	}
-	return match.trim();
+	return matches;
 }
 
 //extract informaiton from the infobox
-function extractInfobox(tokens, doc, mustRemoveTokens) {
-	var match = extract(tokens, doc.wikipedia.infobox['content']);
-	doc.wikipedia.infobox['content'] = doc.wikipedia.infobox['content'].replace(match, '');
-	if (mustRemoveTokens) {
-		match = match.substring(tokens[0].length, match.length - tokens[tokens.length - 1].length);
+function extractInfobox(tokens, doc) {
+	var matches = extract(tokens, doc.wikipedia.infobox['content'], true);
+	for (i = 0; i < matches.length; i++) {
+		doc.wikipedia.infobox['content'] = doc.wikipedia.infobox['content'].replace(matches[i], '')
+		matches[i] = matches[i].substring(tokens[0].length, matches[i].length - tokens[tokens.length - 1].length)
+		matches[i].trim()
 	}
-	return match.trim();
+	return matches;
 }
-
 
 
 // ------------------------------- General Utils -------------------------------
@@ -318,20 +328,28 @@ function normalizeKey(value) {
 
 //normalize a value into a regular expression
 function normalizeRegExp(value) {
-	return value.replace('|', '\\|');
+	value = value.split('|').join('\\|');
+	value = value.split('[').join('\\[');
+	value = value.split(']').join('\\]');
+
+	return value;
 }
 
 //general regexp extract helper
-function extract(tokens, text) {
-	var regExpStr = normalizeRegExp(tokens[0]);
+function extract(tokens, text, findAll) {
+	var regExpStr = normalizeRegExp(tokens[0])
 	for (i = 1; i < tokens.length; i++) {
-		regExpStr += '(.|\n)*?' + normalizeRegExp(tokens[i]);
+		regExpStr += '(.|\n)*?' + normalizeRegExp(tokens[i])
 	}
-	var regExp = new RegExp(regExpStr, 'i');
+	var regExp = new RegExp(regExpStr, 'ig')
 
-	var match = regExp.exec(text);
-	if (!match) {
-		return '';
-	}
-	return match[0];
+	var matches = []
+	do {
+		var match = regExp.exec(text)
+		if (!match) {
+			return matches
+		}
+		matches.push(match[0])
+	} while (findAll)
+	return matches
 }
